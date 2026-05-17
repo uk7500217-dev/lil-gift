@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 RUMI leads — UBAID follows 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a0a2a 50%, #2a0a1a 100%);
+            overflow: hidden;
+            height: 100vh;
+            font-family: 'Poppins', 'Segoe UI', cursive;
+            cursor: none;
+        }
+        
+        canvas {
+            display: block;
+            cursor: none;
+        }
+        
+        .heart-bg {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+            font-family: monospace;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .instruction {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 10;
+            pointer-events: none;
+            text-align: right;
+        }
+        
+        .heart-bg span, .instruction span {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="heart-bg">
+        <span>💕</span> <span>✨</span> <span>💫</span> <span>💖</span>
+    </div>
+    <div class="instruction">
+        🫶 <span>You</span> leads — <span>I</span> follows 🫶<br>
+        i love u💋🌻❤
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+        
+        canvas.width = w;
+        canvas.height = h;
+        
+        // UBAID particle class (the follower) - changed from RUMI
+        class UbaidParticle {
+            constructor(x, y) {
+                this.x = x || Math.random() * w;
+                this.y = y || Math.random() * h;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.size = Math.random() * 20 + 16;
+                this.opacity = Math.random() * 0.5 + 0.4;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+                // Different UBAID variations
+                const ubaidVariants = ['UBAID', '🫶', '💕', '✨', '🌻'];
+                this.displayText = ubaidVariants[Math.floor(Math.random() * ubaidVariants.length)];
+                if (Math.random() > 0.7) {
+                    this.displayText = '💕';
+                }
+            }
+            
+            follow(tx, ty) {
+                const dx = tx - this.x;
+                const dy = ty - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > 10) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = Math.min(2.5, 60 / dist);
+                    this.vx += Math.cos(angle) * force * 0.06;
+                    this.vy += Math.sin(angle) * force * 0.06;
+                }
+                
+                this.vx *= 0.96;
+                this.vy *= 0.96;
+                
+                const maxSpeed = 6;
+                this.vx = Math.min(maxSpeed, Math.max(-maxSpeed, this.vx));
+                this.vy = Math.min(maxSpeed, Math.max(-maxSpeed, this.vy));
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < -50) this.x = w + 50;
+                if (this.x > w + 50) this.x = -50;
+                if (this.y < -50) this.y = h + 50;
+                if (this.y > h + 50) this.y = -50;
+                
+                this.rotation += this.rotationSpeed;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff69b4';
+                
+                ctx.font = `${this.size}px 'Segoe UI', 'Poppins', cursive`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const gradient = ctx.createLinearGradient(-20, -10, 20, 10);
+                gradient.addColorStop(0, '#ff6b9d');
+                gradient.addColorStop(0.5, '#ffb6c1');
+                gradient.addColorStop(1, '#ff69b4');
+                ctx.fillStyle = gradient;
+                
+                ctx.globalAlpha = this.opacity;
+                ctx.fillText(this.displayText, 0, 0);
+                
+                ctx.restore();
+            }
+        }
+        
+        // Create many UBAID particles (followers)
+        const ubaidParticles = [];
+        const particleCount = 40;  // Change this number for more/less UBAIDs
+        
+        for (let i = 0; i < particleCount; i++) {
+            ubaidParticles.push(new UbaidParticle());
+        }
+        
+        // RUMI cursor position (changed from UBAID)
+        let rumiX = w / 2;
+        let rumiY = h / 2;
+        
+        let particles = [];
+        let mouseTrail = [];
+        
+        window.addEventListener('mousemove', (e) => {
+            rumiX = e.clientX;
+            rumiY = e.clientY;
+            
+            mouseTrail.push({ x: rumiX, y: rumiY, life: 30 });
+            if (mouseTrail.length > 20) mouseTrail.shift();
+            
+            for (let i = 0; i < 2; i++) {
+                particles.push({
+                    x: rumiX + (Math.random() - 0.5) * 20,
+                    y: rumiY + (Math.random() - 0.5) * 20,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3 - 2,
+                    life: 40,
+                    text: Math.random() > 0.5 ? '💕' : '💋'
+                });
+            }
+        });
+        
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length) {
+                rumiX = e.touches[0].clientX;
+                rumiY = e.touches[0].clientY;
+                mouseTrail.push({ x: rumiX, y: rumiY, life: 30 });
+                if (mouseTrail.length > 20) mouseTrail.shift();
+            }
+            e.preventDefault();
+        });
+        
+        window.addEventListener('click', (e) => {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: rumiX + (Math.random() - 0.5) * 30,
+                    y: rumiY + (Math.random() - 0.5) * 30,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6 - 3,
+                    life: 50,
+                    text: ['💕', '🤍', '💗', '💓', '💘'][Math.floor(Math.random() * 5)]
+                });
+            }
+        });
+        
+        function resize() {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.width = w;
+            canvas.height = h;
+        }
+        
+        window.addEventListener('resize', resize);
+        
+        // Draw RUMI cursor (changed from UBAID)
+        function drawRumiCursor() {
+            ctx.save();
+            
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = '#ff69b4';
+            
+            ctx.beginPath();
+            ctx.arc(rumiX, rumiY, 35, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 105, 180, 0.1)';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(rumiX, rumiY, 20, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 105, 180, 0.2)';
+            ctx.fill();
+            
+            ctx.font = `bold ${32}px 'Segoe UI', 'Poppins', cursive`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const gradient = ctx.createLinearGradient(rumiX - 40, rumiY - 20, rumiX + 40, rumiY + 20);
+            gradient.addColorStop(0, '#ff6b9d');
+            gradient.addColorStop(0.5, '#ffb6c1');
+            gradient.addColorStop(1, '#ff1493');
+            ctx.fillStyle = gradient;
+            
+            ctx.shadowBlur = 20;
+            ctx.fillText('RUMI', rumiX, rumiY - 10);
+            
+            ctx.font = '24px "Segoe UI"';
+            ctx.fillStyle = '#ff69b4';
+            ctx.fillText('🫶', rumiX + 45, rumiY - 5);
+            
+            ctx.restore();
+        }
+        
+        function drawTrail() {
+            for (let i = 0; i < mouseTrail.length; i++) {
+                const t = mouseTrail[i];
+                const alpha = t.life / 30 * 0.3;
+                ctx.font = `${16 + (mouseTrail.length - i) * 0.5}px 'Segoe UI'`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = `rgba(255, 105, 180, ${alpha})`;
+                ctx.fillText('💋', t.x, t.y);
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                
+                const alpha = p.life / 40;
+                ctx.font = `${18}px 'Segoe UI'`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = `rgba(255, 105, 180, ${alpha})`;
+                ctx.fillText(p.text, p.x, p.y);
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        let time = 0;
+        
+        function drawBackground() {
+            time += 0.02;
+            
+            const gradient = ctx.createLinearGradient(0, 0, w, h);
+            gradient.addColorStop(0, '#0a0a2a');
+            gradient.addColorStop(0.3, '#1a0a2a');
+            gradient.addColorStop(0.7, '#2a0a2a');
+            gradient.addColorStop(1, '#1a0a1a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+            
+            ctx.globalAlpha = 0.15;
+            for (let i = 0; i < 15; i++) {
+                const x = (Math.sin(time * 0.5 + i) * 0.5 + 0.5) * w;
+                const y = (Math.sin(time * 0.3 + i * 2) * 0.3 + 0.5) * h;
+                ctx.font = '30px "Segoe UI"';
+                ctx.fillStyle = '#ff69b4';
+                ctx.fillText('🤍', x, y);
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        function animate() {
+            drawBackground();
+            drawTrail();
+            
+            // UBAID particles follow RUMI cursor
+            ubaidParticles.forEach(particle => {
+                particle.follow(rumiX, rumiY);
+                particle.draw();
+            });
+            
+            drawParticles();
+            drawRumiCursor();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        resize();
+        animate();
+        
+        window.addEventListener('load', () => {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    particles.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4 - 2,
+                        life: 60,
+                        text: '🤍'
+                    });
+                }, i * 30);
+            }
+        });
+    </script>
+</body>
+</html>
